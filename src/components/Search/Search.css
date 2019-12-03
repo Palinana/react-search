@@ -1,0 +1,10 @@
+.search {
+    background: #F1F1F1;
+    padding: 7rem 0;
+    margin: 0 auto;
+}
+
+.search__heading {
+    color: #5f5e5e;
+    font-weight: 400;
+}
