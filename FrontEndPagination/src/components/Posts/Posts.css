@@ -4,3 +4,15 @@
 	right: 0;
 	margin: auto;
 }
+
+.list-group-item {
+	background: #F7F7F7;
+}
+
+.list-group-flush .list-group-item:first-child {
+	border-top: none;
+}
+
+.list-group-flush .list-group-item:last-child {
+	border-bottom: none;
+}
