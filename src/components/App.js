@@ -3,6 +3,7 @@ import axios from 'axios';
 
 import Search from '../components/Search/Search';
 import ImageGallery from '../components/ImageGallery/ImageGallery';
+import PageNavigation from '../components/Navigation/PageNavigation';
 import Loader from '../components/UI/Spinner/loader.gif';
 import './App.css';
 
@@ -12,7 +13,9 @@ class App extends Component {
         results: {},
         loading: false,
         message: '',
-        cancel: ''
+        totalResults: 0,
+        totalPages: 0,
+        currentPageNo: 0,
     }
 
     cancel = '';
@@ -47,13 +50,18 @@ class App extends Component {
         })
             .then(res => {
                 console.log('data ', res.data)
+                const total = res.data.total;
+				const totalPagesCount = this.getPageCount(total, 12);
                 const resultNotFoundMsg = !res.data.results.length
                     ? 'There are no more search results. Please try a new search'
                     : '';
                 this.setState({
                     results: res.data.results,
                     message: resultNotFoundMsg,
-                    loading: false
+                    loading: false,
+                    totalResults: total,
+					totalPages: totalPagesCount,
+					currentPageNo: updatedPageNumber
                 })
             })
             .catch( error => {
@@ -66,8 +74,32 @@ class App extends Component {
             })
     }
 
+    // Get the Total Pages count
+    getPageCount = (total, denominator) => {
+        const divisible	= 0 === total % denominator;
+        const valueToBeAdded = divisible ? 0 : 1;
+		return Math.floor(total/denominator) + valueToBeAdded; // total number of pages
+    }
+
+    // Fetch results according to the prev or next page requests
+    handlePageClick = (type, event) => {
+        // event.preventDefault();
+
+        const updatePageNo = type === 'prev' ? 
+            this.state.currentPageNo - 1
+            : this.state.currentPageNo + 1;
+            
+        if(!this.state.loading) {
+            this.setState({ loading: true, message: '' }, () => {
+                this.fetchSearchResults(updatePageNo, this.state.query);
+            });
+        }
+    }
+
     render() {
-        const { query, loading, message, results } = this.state;
+        const { query, loading, message, results, currentPageNo, totalPages } = this.state;
+        const showPrevLink = 1 < currentPageNo;
+        const showNextLink = totalPages > currentPageNo;
 
         return (
             <div className="container text-center">
@@ -78,17 +110,30 @@ class App extends Component {
                 />
 
                 {/*	Error Message*/}
-				    {message && <p className="message">{message}</p>}
+				    {message && <p className="message mt-5">{message}</p>}
 
-                {/*	Loader*/}
-			        <img src={Loader} className={`search__loader ${loading ? 'show' : 'hide' }`} alt="loader"/>
+                {/*Navigation*/}
+                <PageNavigation 
+                    showPrevLink={showPrevLink}
+                    showNextLink={showNextLink}
+                    handlePrevClick={(event) => this.handlePageClick('prev', event)}
+                    handleNextClick={(event) => this.handlePageClick('next', event)}
+                />
 
                 {/*	Result*/}
                 {
                     Object.keys(results).length && results.length ? 
-                    <ImageGallery images={results}/>
-                    : null
+                    <ImageGallery images={results}/> : 
+                    <img src={Loader} className={`search__loader ${loading ? 'show' : 'hide' }`} alt="loader"/>
                 }
+
+                {/*Navigation*/}
+                <PageNavigation 
+                    showPrevLink={showPrevLink}
+                    showNextLink={showNextLink}
+                    handlePrevClick={(event) => this.handlePageClick('prev', event)}
+                    handleNextClick={(event) => this.handlePageClick('next', event)}
+                />
             </div>
         )
     }

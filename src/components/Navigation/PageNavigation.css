@@ -1,0 +1,11 @@
+.btn-navigation {
+    padding: 1rem 3rem;
+    border-radius: 0;
+    font-size: 1.3rem;
+    margin: 1rem;
+}
+
+.btn-navigation:focus,
+.btn-navigation:active {
+    box-shadow: none !important;
+}
